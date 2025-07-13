@@ -1,8 +1,5 @@
 #include "../includes/initialize.h"
 
-// checks if the element of a row belongs to the array
-// ----------------------------------------------------------------------
-
 int	check_player(char c, const char *array)
 {
 	int	i;
@@ -16,9 +13,6 @@ int	check_player(char c, const char *array)
 	}
 	return (0);
 }
-
-// checks whether the row is a map row or not 
-// ----------------------------------------------------------------------
 
 int	check_row_map(char *line)
 {
@@ -46,9 +40,6 @@ int	check_row_map(char *line)
 	return (0);
 }
 
-// checks whether there are too many commas
-// ----------------------------------------------------------------------
-
 static void	count_commas(char *str)
 {
 	int	i;
@@ -65,9 +56,6 @@ static void	count_commas(char *str)
 	if (count > 2)
 		error_exit_input("invalid color input, too many commas");
 }
-
-// checks whether there are commans at the begining or at the end
-// ----------------------------------------------------------------------
 
 void	check_end_comma(char *str)
 {
@@ -91,8 +79,6 @@ void	check_end_comma(char *str)
 	}
 }
 
-// checks whether all paths and all colors are present in the input
-// ----------------------------------------------------------------------
 
 void	true_input_verify(bool array[])
 {

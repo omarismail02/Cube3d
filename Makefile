@@ -20,15 +20,15 @@ ifeq ($(UNAME), Linux)
 	MLX42_FLAGS = -I$(LIB_DIR)/$(MLX42_DIR)/include -L./$(LIB_DIR)/$(MLX42_DIR) -lmlx42 -ldl -lglfw -pthread -lm
 endif
 
-SRC_INIT_DIR	=	src_init/
+SRC_INIT_DIR	=	parsing/
 SRC_INIT	=	main.c\
 				process_input.c\
 				process_input_utils.c\
 				process_path_color.c\
 				process_map.c\
-				process_map_validity.c
+				map_validation.c
 
-SRC_RENDER_DIR = src_render/
+SRC_RENDER_DIR = raycasting/
 SRC_RENDER = 	render.c\
 				render_init.c \
 				vector_functions.c \

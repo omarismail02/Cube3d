@@ -57,8 +57,6 @@ static void	find_map_start(int fd, t_data *data)
 	count_rows(fd, &line, i, data);
 }
 
-//-------------------------------------------------------
-
 int	process_input(char *file, t_data *data)
 {
 	char	*line;

@@ -63,7 +63,6 @@ static void	middle_section(char **map, int i, t_data *data)
 // if map[i][j] == 0  || map[i][j] == NSEW -> if neighbours == ' ' error 
 // if map[i][j] == NSEW -> if data->player == 0 then data->player == 1
 //                      -> if data->player == 1 then error 
-// -----------------------------------------------------------------
 // checking in order: the first line, the middle section 
 //                    and the last line
 
