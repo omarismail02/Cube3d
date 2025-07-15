@@ -8,7 +8,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <limits.h>
-# include "../includes/libft.h"
+# include "../libft/libft.h"
 
 # ifndef BUFFER_SIZE
 #  define BUFFER_SIZE 1200

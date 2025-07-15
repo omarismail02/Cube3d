@@ -1,36 +1,45 @@
-#include "../includes/render.h"
+#include "../includes/struct.h"
 
-unsigned int	grading_colour(unsigned int colour, double percentage)
+unsigned int adjust_brightness(unsigned int colour, double percent)
 {
-	t_rgba	color;
+	t_colors color;
 
-	color.rgba = colour;
-	if (percentage < 1.0)
+	color.colors = colour;
+	if (percent < 1.0)
 	{
-		color.r = (unsigned char)((percentage) * color.r);
-		color.g = (unsigned char)((percentage) * color.g);
-		color.b = (unsigned char)((percentage) * color.b);
+		color.o = (unsigned char)((percent) * color.o);
+		color.n = (unsigned char)((percent) * color.n);
+		color.m = (unsigned char)((percent) * color.m);
 	}
-	return (color.rgba);
+	return (color.colors);
 }
 
-unsigned int	get_colour_png(mlx_texture_t *png, unsigned int x
-					, unsigned int y)
+unsigned int get_colour_from_xpm(char *img_data, int x, int y,
+								int size_line, int bpp)
 {
-	unsigned int	offset;
-	unsigned char	*dst;
+	unsigned int color;
+	unsigned char *pixel;
 
-	if (x < png->width && y < png->height)
+	if (!img_data || x < 0 || y < 0)
+		return (0x00000000);
+
+	pixel = (unsigned char *)img_data + y * size_line + x * (bpp / 8);
+	color = 0;
+	if (bpp == 32)
 	{
-		offset = y * (png->width * 4) + x * 4;
-		dst = png->pixels + offset;
-		return (*(unsigned int *) dst);
+		color = *(unsigned int *)pixel;
 	}
-	return (0X00000000);
+	else if (bpp == 24)
+	{
+		// Assuming little endian: RGB in three bytes
+		color = pixel[0] | (pixel[1] << 8) | (pixel[2] << 16) | (0xFF << 24);
+	}
+	return (color);
 }
 
-unsigned int	create_colour(unsigned char r, unsigned char g, unsigned char b
-				, unsigned char a)
+unsigned int create_colour(unsigned char r, unsigned char g, unsigned char b,
+						   unsigned char a)
 {
-	return ((unsigned int)(a << 24 | b << 16 | g << 8 | r));
+	// Format: 0xAARRGGBB for minilibx-linux (usually 32bpp ARGB)
+	return ((a << 24) | (r << 16) | (g << 8) | b);
 }

@@ -1,79 +1,70 @@
 NAME = cub3D
-CFLAGS	= -Wall -Werror -Wextra -g 
-UNAME = $(shell uname -s)
+FLAGS = -Wall -Werror -Wextra -g
+
+# Directories
+LIBFT = libft
+MLX = minilibx-linux  # At project root, NOT inside lib
+
+# Lib Includes and Flags
+LIB_INCLUDE = -I$(LIBFT) -I$(MLX)
+
+# Linker flags
+LIB_FLAGS = -L$(LIBFT) -lft -L$(MLX) -lmlx -lXext -lX11 -lm -lz
+
+# Source files
+SRC_FILES = \
+	parsing/input.c \
+	parsing/input_helpers.c \
+	parsing/color.c \
+	parsing/map.c \
+	parsing/map_validation.c \
+	parsing/main.c \
+	parsing/utils.c \
+	raycasting/render.c \
+	raycasting/render_init.c \
+	raycasting/vector_functions.c \
+	raycasting/bres_algo.c \
+	raycasting/image_buffer_functions.c \
+	raycasting/map2d_functions.c \
+	raycasting/map2d_functions_utils.c \
+	raycasting/dda_algo.c \
+	raycasting/utils.c \
+	raycasting/projection3d.c \
+	raycasting/colour_functions.c
+
+GNL_DIR = get_next_line/
+GNL = get_next_line.c \
+	  get_next_line_utils.c
+
+OBJ_SRC = $(SRC_FILES:.c=.o)
+OBJ_UTILS = $(UTILS:%.c=$(UTILS_DIR)%.o)
+OBJ_GNL = $(GNL:%.c=$(GNL_DIR)%.o)
+
+OBJ_FILES = $(OBJ_SRC) $(OBJ_UTILS) $(OBJ_GNL)
 
 
-LIB_DIR = lib
-LIB_FLAGS = $(LIBFT_FLAGS) $(MLX42_FLAGS) 
-LIB_INCLUDE = $(LIBFT_INCLUDE) $(MLX42_INCLUDE)
-
-LIBFT_DIR = libft
-LIBFT_FLAGS = -L$(LIB_DIR)/$(LIBFT_DIR) -lft
-LIBFT_INCLUDE = -I$(LIB_DIR)/$(LIBFT_DIR)
-
-MLX42_DIR = MLX42
-MLX42_INCLUDE = -I$(LIB_DIR)/$(MLX42_DIR)/include
-ifeq ($(UNAME), Darwin)
-	MLX42_FLAGS = -L$(LIB_DIR)/$(MLX42_DIR) -lmlx42 -L$(shell brew --prefix glfw)/lib -lglfw
-endif
-ifeq ($(UNAME), Linux)
-	MLX42_FLAGS = -I$(LIB_DIR)/$(MLX42_DIR)/include -L./$(LIB_DIR)/$(MLX42_DIR) -lmlx42 -ldl -lglfw -pthread -lm
-endif
-
-SRC_INIT_DIR	=	parsing/
-SRC_INIT	=	main.c\
-				process_input.c\
-				process_input_utils.c\
-				process_path_color.c\
-				process_map.c\
-				map_validation.c
-
-SRC_RENDER_DIR = raycasting/
-SRC_RENDER = 	render.c\
-				render_init.c \
-				vector_functions.c \
-				bres_algo.c \
-				image_buffer_functions.c\
-				map2d_functions.c \
-				map2d_functions_utils.c \
-				dda_algo.c \
-				projection3d.c \
-				colour_functions.c
-
-UTILS_DIR	=	utils/
-UTILS		=	error.c\
-				free.c
-
-GNL_DIR	=	get_next_line/
-GNL			=	get_next_line.c\
-				get_next_line_utils.c
-
-OBJ_INIT		=	$(SRC_INIT:%.c=$(SRC_INIT_DIR)%.o)
-OBJ_RENDER		=	$(SRC_RENDER:%.c=$(SRC_RENDER_DIR)%.o)
-OBJ_UTILS		=	$(UTILS:%.c=$(UTILS_DIR)%.o)
-OBJ_GNL			=	$(GNL:%.c=$(GNL_DIR)%.o)
-
-OBJ_FILES = $(OBJ_INIT) $(OBJ_RENDER) $(OBJ_UTILS) $(OBJ_GNL)
-
+# Main rule
 all: $(NAME)
 
 $(NAME): $(OBJ_FILES)
-	$(MAKE) -C $(LIB_DIR)/$(LIBFT_DIR) 
-	$(MAKE) -C $(LIB_DIR)/$(MLX42_DIR)
-	$(CC) $(CFLAGS) $(OBJ_FILES) -o $(NAME) $(LIB_INCLUDE) $(LIB_FLAGS)
+	$(MAKE) -C $(LIBFT)
+	$(MAKE) -C $(MLX)
+	$(CC) $(FLAGS) $(OBJ_FILES) -o $(NAME) $(LIB_INCLUDE) $(LIB_FLAGS)
 
-%.o: %.c $(HEADER_FILES)
-	$(CC) $(CFLAGS) $(LIB_INCLUDE) -c $< -o $@ 
+# Pattern rule for compilation
+%.o: %.c
+	$(CC) $(FLAGS) $(LIB_INCLUDE) -c $< -o $@
 
+# Clean rules
 clean:
-	$(MAKE) -C $(LIB_DIR)/$(LIBFT_DIR) clean
-	$(MAKE) -C $(LIB_DIR)/$(MLX42_DIR) clean
+	$(MAKE) -C $(LIBFT) clean
+	$(MAKE) -C $(MLX) clean
 	rm -f $(OBJ_FILES)
 
 fclean: clean
-	$(MAKE) -C $(LIB_DIR)/$(LIBFT_DIR) fclean
-	$(MAKE) -C $(LIB_DIR)/$(MLX42_DIR) fclean
-	rm -f $(NAME) 
+	$(MAKE) -C $(LIBFT) fclean
+	$(MAKE) -C $(MLX) clean
+	rm -f $(NAME)
 
 re: fclean all
 

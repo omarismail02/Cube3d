@@ -1,47 +1,44 @@
-#include "../includes/render.h"
+#include "../includes/struct.h"
 
-t_vector	calc_ray_vector(double degree, double distance)
+t_motion calc_ray_vector(double degree, double distance)
 {
-	t_vector	ray;
-	double		radians;
+    t_motion ray;
+    double radians;
 
-	radians = (degree / 180.0) * M_PI;
-	ray.x = cos(radians) * distance;
-	ray.y = sin(radians) * distance;
-	return (ray);
+    radians = (degree / 180.0) * M_PI;
+    ray.x = cos(radians) * distance;
+    ray.y = sin(radians) * distance;
+    return (ray);
 }
 
-void	draw_viewing_cone(t_info *data)
+void draw_viewing_cone(t_info *data)
 {
-	double		i;
-	t_dda		result;
-	t_vector	current_heading;
-	t_vector	ray;
+    double i;
+    t_dda result;
+    t_motion current_heading;
+    t_motion ray;
 
-	i = (-1 * (data->player.fov / 2.0));
-	while (i < (data->player.fov / 2.0))
-	{
-		current_heading = rotate_vector(data->player.vector,
-				data->player.degree + i);
-		result = apply_dda(data->player.position, current_heading, i,
-				data->map);
-		ray = calc_ray_vector(data->player.degree + i,
-				result.distance);
-		draw_ray(data->imgmini, ray, data->player.position,
-			data->mini_pixelsize);
-		i += .1;
-	}
+    i = (-1 * (data->player.fov / 2.0));
+    while (i < (data->player.fov / 2.0))
+    {
+        current_heading = rotate_vector(data->player.vector, data->player.degree + i);
+        result = apply_dda(data->player.position, current_heading, i, data->map);
+        ray = calc_ray_vector(data->player.degree + i, result.range);
+        draw_ray(data->imgmini_data, ray, data->player.position,
+                 data->mini_pixelsize, data->mini_line_len, data->mini_bpp);
+        i += 0.1;
+    }
 }
 
-void	draw_ray(mlx_image_t *img, t_vector ray, t_vector playerpos,
-			unsigned int pixelsize)
+void draw_ray(char *img_data, t_motion ray, t_motion playerpos,
+              unsigned int pixelsize, int size_line, int bpp)
 {
-	t_coor	start;
-	t_coor	end;
+    t_coordinates start;
+    t_coordinates end;
 
-	start.x = playerpos.x * pixelsize;
-	start.y = playerpos.y * pixelsize;
-	end.x = start.x + ray.x * pixelsize;
-	end.y = start.y - ray.y * pixelsize;
-	draw_line(start, end, img, RED);
+    start.x = (int)(playerpos.x * pixelsize);
+    start.y = (int)(playerpos.y * pixelsize);
+    end.x = start.x + (int)(ray.x * pixelsize);
+    end.y = start.y - (int)(ray.y * pixelsize);
+    plot_line(start, end, img_data, size_line, bpp, RED);
 }

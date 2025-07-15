@@ -1,14 +1,4 @@
-#include "../includes/initialize.h"
-
-int	open_fd(char *file)
-{
-	int	fd;
-
-	fd = open(file, O_RDONLY);
-	if (fd == -1)
-		error_exit_input("failed to open fd");
-	return (fd);
-}
+#include "../includes/parse.h"
 
 static void	initialize_data(t_data *data)
 {
@@ -17,12 +7,12 @@ static void	initialize_data(t_data *data)
 	i = 0;
 	data->nr_paths = 0;
 	data->nr_colors = 0;
-	data->map_start = 0;
-	data->map_rows = 0;
-	data->map_columns = 0;
+	data->start = 0;
+	data->rows = 0;
+	data->cols = 0;
 	data->player = 0;
-	data->player_direction = -1;
-	data->north = NULL;
+	data->direction = -1;
+	data->nor = NULL;
 	data->south = NULL;
 	data->east = NULL;
 	data->west = NULL;
@@ -51,7 +41,7 @@ void	check_extension(char *str1, char *str2)
 			i++;
 		}
 		else
-			error_exit_input("wrong extension");
+			print_error("wrong extension");
 	}
 }
 

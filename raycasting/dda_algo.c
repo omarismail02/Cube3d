@@ -1,80 +1,73 @@
-#include "../includes/render.h"
+#include "../includes/struct.h"
 
-double	ft_absf(double number)
+static void	init_dda(t_raygrid_data *data, t_motion *position, t_motion *ray)
 {
-	if (number < 0)
-		return (-1 * number);
-	return (number);
-}
-
-static void	init_dda(t_dda_vars *vars, t_vector *pos, t_vector *ray)
-{
-	if (ray->x < 0)
-	{
-		vars->step_x = -1;
-		vars->side_dist_x = (pos->x - vars->map_x) * vars->delta_dist_x;
-	}
-	else
-	{
-		vars->step_x = 1;
-		vars->side_dist_x = (vars->map_x + 1.0 - pos->x) * vars->delta_dist_x;
-	}
 	if (ray->y < 0)
 	{
-		vars->step_y = -1;
-		vars->side_dist_y = (pos->y - vars->map_y) * vars->delta_dist_y;
+		data->step_of_y = -1;
+		data->ray_len_y = (position->y - data->y) * data->dda_increment_y;
 	}
 	else
 	{
-		vars->step_y = 1;
-		vars->side_dist_y = (vars->map_y + 1.0 - pos->y) * vars->delta_dist_y;
+		data->step_of_y = 1;
+		data->ray_len_y = (data->y + 1.0 - position->y) * data->dda_increment_y;
+	}
+	if (ray->x < 0)
+	{
+		data->step_of_x = -1;
+		data->ray_len_x = (position->x - data->x) * data->dda_increment_x;
+	}
+	else
+	{
+		data->step_of_x = 1;
+		data->ray_len_x = (data->x + 1.0 - position->x) * data->dda_increment_x;
 	}
 }
 
-static void	start_dda(t_dda_vars *vars, t_dda *result, double angle, char **map)
+static void	start_dda(t_raygrid_data *data, t_dda *result, double angle, char **map)
 {
 	int	hit;
 
 	hit = 0;
 	while (hit == 0)
 	{
-		if (vars->side_dist_x < vars->side_dist_y)
+		if (data->ray_len_x < data->ray_len_y)
 		{
-			vars->side_dist_x += vars->delta_dist_x;
-			vars->map_x += vars->step_x;
-			result->side = 0 + (vars->step_x + 1);
+			data->ray_len_x += data->dda_increment_x;
+			data->x += data->step_of_x;
+			result->dir = 0 + (data->step_of_x + 1);
 		}
 		else
 		{
-			vars->side_dist_y += vars->delta_dist_y;
-			vars->map_y += vars->step_y;
-			result->side = 1 + (vars->step_y + 1);
+			data->ray_len_y += data->dda_increment_y;
+			data->y += data->step_of_y;
+			result->dir = 1 + (data->step_of_y + 1);
 		}
-		if (map[vars->map_y][vars->map_x] == '1')
+		if (map[data->y][data->x] == '1')
 			hit = 1;
 	}
-	if (result->side == EAST || result->side == WEST)
-		result->distance = (vars->side_dist_x - vars->delta_dist_x);
+	if (result->dir == EAST || result->dir == WEST)
+		result->range = (data->ray_len_x - data->dda_increment_x);
 	else
-		result->distance = (vars->side_dist_y - vars->delta_dist_y);
-	result->perp_dist = cos((angle / 180) * M_PI) * result->distance;
+		result->range = (data->ray_len_y - data->dda_increment_y);
+	result->view_dist = cos((angle / 180) * M_PI) * result->range;
 }
 
-t_dda	apply_dda(t_vector playerpos, t_vector ray, double angle, char **map)
+t_dda	apply_dda(t_motion pos_player, t_motion ray, double angle, char **map)
 {
+	t_raygrid_data	dda_vars;
 	t_dda		result;
-	t_dda_vars	dda_vars;
 
-	dda_vars.map_x = (int) playerpos.x;
-	dda_vars.map_y = (int) playerpos.y;
-	dda_vars.delta_dist_x = ft_absf(1 / ray.x);
-	dda_vars.delta_dist_y = ft_absf(1 / ray.y);
-	init_dda(&dda_vars, &playerpos, &ray);
+	dda_vars.y = (int) pos_player.y;
+	dda_vars.x = (int) pos_player.x;
+	dda_vars.dda_increment_x = absolute(1 / ray.x);
+	dda_vars.dda_increment_y = absolute(1 / ray.y);
+	init_dda(&dda_vars, &pos_player, &ray);
 	start_dda(&dda_vars, &result, angle, map);
-	if (result.side == EAST || result.side == WEST)
-		result.hitpos = playerpos.y + result.distance * ray.y;
+	if (result.dir == EAST || result.dir == WEST)
+		result.position = pos_player.y + result.range * ray.y;
 	else
-		result.hitpos = playerpos.x + result.distance * ray.x;
-	result.hitpos -= floorf(result.hitpos);
+		result.position = pos_player.x + result.range * ray.x;
+	result.position -= floorf(result.position);
 	return (result);
 }

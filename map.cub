@@ -1,10 +1,10 @@
-NO ./images/brick1.png
-SO ./images/brick2.png
-WE ./images/brick3.png
-EA ./images/brick4.png
+NO img/MARBFAC2.xpm
+WE img/SKULWALL.xpm
+SO img/MARBFACE.xpm
+EA img/SKULWAL3.xpm
 
-F 25,255,0
-C 0,0,255
+F 128,128,128
+C 255,0,0
 
         1111111111111111111111111
         1000000000110000000000001
