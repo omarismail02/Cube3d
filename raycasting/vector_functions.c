@@ -1,39 +1,39 @@
 #include "../includes/struct.h"
 
-t_coordinates	vec_to_coor(t_motion vec)
-{
-	t_coordinates	temp_coor;
-
-	temp_coor.x = (int) vec.x;
-	temp_coor.y = (int) vec.y;
-	return (temp_coor);
-}
-
-t_motion	add_vectors(t_motion vec1, t_motion vec2)
+t_motion	vadd(t_motion vec, t_motion vec1)
 {
 	t_motion	result;
 
-	result.x = vec1.x + vec2.x;
-	result.y = vec1.y + vec2.y;
+	result.x = vec.x + vec1.x;
+	result.y = vec.y + vec1.y;
 	return (result);
 }
 
-t_motion	subtract_vectors(t_motion vec1, t_motion vec2)
+t_motion	vsub(t_motion vec, t_motion vec1)
 {
 	t_motion	result;
 
-	result.x = vec1.x - vec2.x;
-	result.y = vec1.y - vec2.y;
+	result.x = vec.x - vec1.x;
+	result.y = vec.y - vec1.y;
 	return (result);
 }
 
-t_motion	rotate_vector(t_motion vec, double degree)
+t_coordinates	vec2pos(t_motion vec)
 {
-	double		radians;
-	t_motion	result;
+	t_coordinates	buffer;
 
-	radians = (-degree / 180.0) * M_PI;
-	result.x = vec.x * cos(radians) - vec.y * sin(radians);
-	result.y = vec.x * sin(radians) + vec.y * cos(radians);
+	buffer.x = (int)vec.x;
+	buffer.y = (int)vec.y;
+	return (buffer);
+}
+
+t_motion	vrotate(t_motion vec, double deg)
+{
+	t_motion	result;
+	double		rad;
+
+	rad = (-deg / 180.0) * M_PI;
+	result.x = vec.x * cos(rad) - vec.y * sin(rad);
+	result.y = vec.x * sin(rad) + vec.y * cos(rad);
 	return (result);
 }

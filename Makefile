@@ -32,13 +32,13 @@ SRC_FILES = \
 	raycasting/projection3d.c \
 	raycasting/colour_functions.c
 
-GNL_DIR = get_next_line/
-GNL = get_next_line.c \
+GET_LINE_DIR = get_next_line/
+GET_LINE = get_next_line.c \
 	  get_next_line_utils.c
 
 OBJ_SRC = $(SRC_FILES:.c=.o)
 OBJ_UTILS = $(UTILS:%.c=$(UTILS_DIR)%.o)
-OBJ_GNL = $(GNL:%.c=$(GNL_DIR)%.o)
+OBJ_GNL = $(GET_LINE:%.c=$(GET_LINE_DIR)%.o)
 
 OBJ_FILES = $(OBJ_SRC) $(OBJ_UTILS) $(OBJ_GNL)
 
@@ -58,7 +58,7 @@ $(NAME): $(OBJ_FILES)
 # Clean rules
 clean:
 	$(MAKE) -C $(LIBFT) clean
-	$(MAKE) -C $(MLX) clean
+	$(MAKE) -C minilibx-linux
 	rm -f $(OBJ_FILES)
 
 fclean: clean

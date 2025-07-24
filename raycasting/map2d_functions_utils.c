@@ -1,44 +1,56 @@
 #include "../includes/struct.h"
 
-t_motion calc_ray_vector(double degree, double distance)
+t_motion	calculate_direction_vector(double degree, double distance)
 {
-    t_motion ray;
-    double radians;
+	double		radians;
+	t_motion	ray;
 
-    radians = (degree / 180.0) * M_PI;
-    ray.x = cos(radians) * distance;
-    ray.y = sin(radians) * distance;
-    return (ray);
+	radians = (degree / 180.0) * M_PI;
+	ray.x = cos(radians) * distance;
+	ray.y = sin(radians) * distance;
+	return (ray);
 }
 
-void draw_viewing_cone(t_info *data)
+void	plot_fov(t_info *data, t_ray_input *input)
 {
-    double i;
-    t_dda result;
-    t_motion current_heading;
-    t_motion ray;
+	double		i;
+	t_motion	ray;
+	t_dda		result;
+	t_motion	orientation;
 
-    i = (-1 * (data->player.fov / 2.0));
-    while (i < (data->player.fov / 2.0))
-    {
-        current_heading = rotate_vector(data->player.vector, data->player.degree + i);
-        result = apply_dda(data->player.position, current_heading, i, data->map);
-        ray = calc_ray_vector(data->player.degree + i, result.range);
-        draw_ray(data->imgmini_data, ray, data->player.position,
-                 data->mini_pixelsize, data->mini_line_len, data->mini_bpp);
-        i += 0.1;
-    }
+	i = (-1 * (data->camera.fov / 2.0));
+	while (i < (data->camera.fov / 2.0))
+	{
+		orientation = vrotate(data->camera.vector, data->camera.degree + i);
+		result = dda(data->camera.position, orientation, i, data->map);
+		ray = calculate_direction_vector(data->camera.degree + i, result.range);
+		input->ray = ray;
+		input->camerapos = data->camera.position;
+		input->block_size = data->block_size;
+		plot_ray(data->smallmap_data, *input, data->small_line_length,
+			data->small_cd);
+		i += 0.1;
+	}
 }
 
-void draw_ray(char *img_data, t_motion ray, t_motion playerpos,
-              unsigned int pixelsize, int size_line, int bpp)
+static void	init_ray_line_data(t_coordinates *start, t_coordinates *end,
+		t_ray_input input)
 {
-    t_coordinates start;
-    t_coordinates end;
+	start->x = (int)(input.camerapos.x * input.block_size);
+	start->y = (int)(input.camerapos.y * input.block_size);
+	end->x = start->x + (int)(input.ray.x * input.block_size);
+	end->y = start->y - (int)(input.ray.y * input.block_size);
+}
 
-    start.x = (int)(playerpos.x * pixelsize);
-    start.y = (int)(playerpos.y * pixelsize);
-    end.x = start.x + (int)(ray.x * pixelsize);
-    end.y = start.y - (int)(ray.y * pixelsize);
-    plot_line(start, end, img_data, size_line, bpp, RED);
+void	plot_ray(char *img_data, t_ray_input input, int size_line, int bpp)
+{
+	t_coordinates	start;
+	t_coordinates	end;
+	t_image_data	data;
+
+	init_ray_line_data(&start, &end, input);
+	data.line_length = size_line;
+	data.bpp = bpp;
+	data.colour = RED;
+	plot_line(start, end, img_data, &data);
 }

@@ -1,92 +1,115 @@
 #include "../includes/struct.h"
 
-static void draw_floor_ceiling(t_info *data, unsigned int top,
-    unsigned int bottom, unsigned int x)
+static void	plot_floor_ceil(t_info *data, unsigned int top, unsigned int bottom,
+		unsigned int x)
 {
-    t_coordinates ceilingtop = {x, 0};
-    t_coordinates ceilingbottom = {x, top - 1};
-    t_coordinates floortop = {x, bottom + 1};
-    t_coordinates floorbottom = {x, data->img_height - 1};
+	t_coordinates	top_ceil;
+	t_coordinates	bottom_ceil;
+	t_coordinates	top_floor;
+	t_coordinates	bottom_floor;
+	t_image_data	data1;
 
-    plot_line(ceilingtop, ceilingbottom, data->img_data, data->line_len, data->bpp, data->ceiling_colour);
-    plot_line(floortop, floorbottom, data->img_data, data->line_len, data->bpp, data->floor_colour);
+	data1.line_length = data->line_len;
+	data1.bpp = data->color_depth;
+	data1.colour = data->col_ceil;
+	top_ceil.x = x;
+	top_ceil.y = 0;
+	bottom_ceil.x = x;
+	bottom_ceil.y = top - 1;
+	top_floor.x = x;
+	top_floor.y = bottom + 1;
+	bottom_floor.x = x;
+	bottom_floor.y = data->img_height - 1;
+	plot_line(top_ceil, bottom_ceil, data->img_data, &data1);
+	data1.colour = data->col_floor;
+	plot_line(top_floor, bottom_floor, data->img_data, &data1);
 }
 
-static unsigned int get_texture_colour(t_info *data, unsigned int tex_index, unsigned int x, unsigned int y)
+static unsigned int	sample_texel(t_info *data, unsigned int i, unsigned int x,
+		unsigned int y)
 {
-    if (x >= (unsigned int)data->tex_width[tex_index] || y >= (unsigned int)data->tex_height[tex_index])
-        return 0x00000000;
-        
-    unsigned int offset = y * data->texture_line_len[tex_index] + x * (data->texture_bpp[tex_index] / 8);
-    unsigned char *dst = (unsigned char *)data->texture_data[tex_index] + offset;
-    return *(unsigned int *)dst;
+	unsigned int	offset;
+	unsigned char	*dst;
+
+	if (x >= (unsigned int)data->bitmap_width[i]
+		|| y >= (unsigned int)data->bitmap_height[i])
+		return (0x00000000);
+	offset = y * data->line_length[i] + x * (data->bitmap_cd[i] / 8);
+	dst = (unsigned char *)data->bitmap_data[i] + offset;
+	return (*(unsigned int *)dst);
 }
 
-static void draw_tex_wall_column(t_info *data, unsigned int x, t_dda *result,
-    t_info *vars)
+static void	plot_wall_slice_column(t_info *data, unsigned int x, t_dda *result,
+		t_info *vars)
 {
-    unsigned int y = 0;
-    while (y <= vars->bottom - vars->top)
-    {
-        unsigned int colour;
-        if (result->dir == EAST || result->dir == NORTH)
-            colour = get_texture_colour(data, result->dir,
-                (unsigned int)((1.0 - result->position) * data->tex_width[result->dir]),
-                (unsigned int)(vars->tex_start + y * vars->step));
-        else
-            colour = get_texture_colour(data, result->dir,
-                (unsigned int)(result->position * data->tex_width[result->dir]),
-                (unsigned int)(vars->tex_start + y * vars->step));
+	unsigned int	y;
+	unsigned int	colour;
+	t_img_info		info;
 
-        colour = adjust_brightness(colour, vars->wall_height_perc);
-        draw_pixel(data->img_data, data->line_len, data->bpp, x, y + vars->top, colour);
-        y++;
-    }
+	y = 0;
+	info.img_data = data->img_data;
+	info.size_line = data->line_len;
+	info.bpp = data->color_depth;
+	while (y <= vars->bottom - vars->top)
+	{
+		if (result->dir == EAST || result->dir == NORTH)
+			colour = sample_texel(data, result->dir, (unsigned int)((1.0
+							- result->position)
+						* data->bitmap_width[result->dir]),
+					(unsigned int)(vars->bitmap_begin + y * vars->step));
+		else
+			colour = sample_texel(data, result->dir,
+					(unsigned int)(result->position
+						* data->bitmap_width[result->dir]),
+					(unsigned int)(vars->bitmap_begin + y * vars->step));
+		colour = adjust_brightness(colour, vars->whp);
+		plot_point(&info, x, y + vars->top, colour);
+		y++;
+	}
 }
 
-static void draw_tex_wall(t_info *data, unsigned int x, unsigned int wall_height,
-    t_dda *result)
+static void	plot_wall_slice(t_info *data, unsigned int x,
+		unsigned int wall_height, t_dda *result)
 {
-    t_info vars;
+	t_info	vars;
 
-    vars.wall = data->texture[result->dir];
-    vars.step = 1.0 * data->tex_height[result->dir] / wall_height;
-    if (wall_height > data->img_height)
-    {
-        vars.top = 0;
-        vars.bottom = data->img_height - 1;
-        vars.tex_start = (((1 - (1.0 * data->img_height / wall_height)) / 2.0)
-                * data->tex_height[result->dir]);
-    }
-    else
-    {
-        vars.top = (data->img_height - wall_height) / 2;
-        vars.bottom = (data->img_height + wall_height) / 2;
-        vars.tex_start = 0.0;
-    }
-    vars.wall_height_perc = 1.0 * wall_height / data->img_height;
-    draw_tex_wall_column(data, x, result, &vars);
-    draw_floor_ceiling(data, vars.top, vars.bottom, x);
+	vars.wall = data->bitmap[result->dir];
+	vars.step = 1.0 * data->bitmap_height[result->dir] / wall_height;
+	if (wall_height > data->img_height)
+	{
+		vars.top = 0;
+		vars.bottom = data->img_height - 1;
+		vars.bitmap_begin = (((1 - (1.0 * data->img_height / wall_height))
+					/ 2.0) * data->bitmap_height[result->dir]);
+	}
+	else
+	{
+		vars.top = (data->img_height - wall_height) / 2;
+		vars.bottom = (data->img_height + wall_height) / 2;
+		vars.bitmap_begin = 0.0;
+	}
+	vars.whp = 1.0 * wall_height / data->img_height;
+	plot_wall_slice_column(data, x, result, &vars);
+	plot_floor_ceil(data, vars.top, vars.bottom, x);
 }
 
-void create_projection(t_info *data)
+void	init_projection(t_info *data)
 {
-    unsigned int x;
-    double angle;
-    double ps;
-    unsigned int wall_height;
-    t_dda dda_result;
+	t_dda			dda_result;
+	unsigned int	x;
+	double			deg;
+	double			ps;
+	unsigned int	column_height;
 
-    x = 0;
-    while (x < data->img_width)
-    {
-        ps = tanf(((data->player.fov / 2.0) / 180) * M_PI);
-        angle = (atanf(-ps + ((2.0 * ps * x) / data->img_width)) * 180) / M_PI;
-        dda_result = apply_dda(data->player.position,
-                rotate_vector(data->player.vector,
-                    data->player.degree - angle), angle, data->map);
-        wall_height = (unsigned int)(data->img_height / dda_result.view_dist);
-        draw_tex_wall(data, x, wall_height, &dda_result);
-        x++;
-    }
+	x = 0;
+	while (x < data->img_width)
+	{
+		ps = tanf(((data->camera.fov / 2.0) / 180) * M_PI);
+		deg = (atanf(-ps + ((2.0 * ps * x) / data->img_width)) * 180) / M_PI;
+		dda_result = dda(data->camera.position, vrotate(data->camera.vector,
+					data->camera.degree - deg), deg, data->map);
+		column_height = (unsigned int)(data->img_height / dda_result.view_dist);
+		plot_wall_slice(data, x, column_height, &dda_result);
+		x++;
+	}
 }

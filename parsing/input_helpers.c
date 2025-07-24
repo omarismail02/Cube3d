@@ -1,35 +1,35 @@
 #include "../includes/parse.h"
 
-int	check_player(char c, const char *array)
+int	parse_camera(char c, const char *tab)
 {
-	int	i;
+	int	j;
 
-	i = 0;
-	while (array[i] != '\0')
+	j = 0;
+	while (tab[j] != '\0')
 	{
-		if (array[i] == c)
+		if (tab[j] == c)
 			return (1);
-		i++;
+		j++;
 	}
 	return (0);
 }
 
-int	check_row_map(char *line)
+int	parse_row(char *row)
 {
+	int	count;
 	int	i;
 	int	j;
-	int	count;
 
 	i = 0;
-	if (line[i] == '\0')
+	if (row[i] == '\0')
 		return (1);
-	while (line[i] != '\0')
+	while (row[i] != '\0')
 	{
 		j = 0;
 		count = 0;
 		while (ROW[j] != '\0')
 		{
-			if (line[i] == ROW[j])
+			if (row[i] == ROW[j])
 				count = 1;
 			j++;
 		}
@@ -40,7 +40,7 @@ int	check_row_map(char *line)
 	return (0);
 }
 
-static void	count_commas(char *str)
+static void	nb_comma(char *str)
 {
 	int	i;
 	int	count;
@@ -54,39 +54,39 @@ static void	count_commas(char *str)
 		i++;
 	}
 	if (count > 2)
-		print_error("invalid color input, too many commas");
+		print_error("number of commas should be 2 only");
 }
 
-void	check_end_comma(char *str)
+void	last_comma(char *str)
 {
 	int	i;
 	int	len;
 
 	i = 1;
-	count_commas(str);
+	nb_comma(str);
 	while (str[i] != '\0' && ft_isdigit((int)str[i]) == 0)
 	{
 		if (str[i] == ',')
-			print_error("invalid color input, too many commas");
+			print_error("number of commas should be 2 only");
 		i++;
 	}
 	len = ft_strlen(str);
 	while (len > -1 && ft_isdigit(str[len]) == 0)
 	{
 		if (str[len] == ',' && str[len - 1] != ',')
-			print_error("invalid color input, too many commas");
+			print_error("number of commas should be 2 only");
 		len--;
 	}
 }
 
-void	true_input_verify(bool tab[])
+void	elements_check(int tab[])
 {
 	int	i;
 
 	i = 0;
 	while (i < 6)
 	{
-		if (tab[i] == false)
+		if (tab[i] == 0)
 			print_error("should have 4 texture and 2 color inputs");
 		i++;
 	}

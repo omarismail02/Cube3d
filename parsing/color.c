@@ -1,85 +1,90 @@
 #include "../includes/parse.h"
 
-static unsigned char	verify_color_elem(char *str)
+static unsigned char	color_input(char *str)
 {
 	unsigned int	temp;
-	char			*temp_str;
 	char			*trim_str;
+	int				i;
 
-	temp = (unsigned int)ft_atoi(str);
-	temp_str = ft_itoa(temp);
 	trim_str = ft_strtrim(str, " ");
-	if (ft_strncmp(trim_str, temp_str, ft_strlen(trim_str)) != 0)
+	if (!trim_str || trim_str[0] == '\0')
 		print_error("invalid color input");
+	i = 0;
+	while (trim_str[i])
+	{
+		if (!ft_isdigit(trim_str[i]))
+			print_error("invalid color input");
+		i++;
+	}
+	temp = (unsigned int)ft_atoi(trim_str);
 	if (temp > 255)
 		print_error("invalid color");
-	free(temp_str);
 	free(trim_str);
 	return ((unsigned char)temp);
 }
 
-static void	process_color(char *line, unsigned char array[],
-							t_data *data, int k)
+static void	load_input_color(t_data *data, unsigned char array[], char *line,
+		int q)
 {
-	char	**split;
+	char	**tab;
 
-	if (data->nr_colors > 1)
+	if (data->color_count > 1)
 		print_error("too many colors");
-	check_end_comma(line);
-	split = ft_split((line + 1), ',');
-	if (!split || !split[0] || !split[1] || !split[2])
-		print_error("failed ft_split");
-	if (split[3] != NULL)
+	last_comma(line);
+	tab = ft_split((line + 1), ',');
+	if (!tab || !tab[0] || !tab[1] || !tab[2])
+		print_error("failed ft_tab");
+	if (tab[3] != NULL)
 		print_error("invalid color input");
-	array[0] = verify_color_elem(split[0]);
-	array[1] = verify_color_elem(split[1]);
-	array[2] = verify_color_elem(split[2]);
-	free_tab(split);
-	data->nr_colors++;
-	data->true_input[k] = true;
+	array[0] = color_input(tab[0]);
+	array[1] = color_input(tab[1]);
+	array[2] = color_input(tab[2]);
+	free_tab(tab);
+	data->elements[q] = 1;
+	data->color_count++;
 }
 
-static void	process_path(char *line, char **str, t_data *data, int k)
+static void	load_texture(char *line, char **str, t_data *data, int q)
 {
-	char	**split;
+	char	**tab;
 	int		fd;
 
 	if (*str != NULL)
-		print_error("double path");
-	if (data->nr_paths > 3)
-		print_error("too many paths");
-	split = ft_split(line + 2, ' ');
-	if (!split || !split[0])
-		print_error("failed ft_split");
-	if (split[1] != NULL)
-		print_error("invalid path input");
-	check_extension(split[0], ".xpm");
-	fd = open(split[0], O_RDONLY);
+		print_error("path already exists");
+	if (data->paths_loaded > 3)
+		print_error("number of paths should be 4");
+	tab = ft_split(line + 2, ' ');
+	if (!tab || !tab[0])
+		print_error("failed to split");
+	if (tab[1] != NULL)
+		print_error("path is not valid");
+	match_extension(tab[0], ".xpm");
+	fd = open(tab[0], O_RDONLY);
 	if (fd == -1)
 	{
-		free_tab(split);
-		print_error("invalid path");
+		free_tab(tab);
+		print_error("path is not valid");
 	}
-	*str = ft_strdup(split[0]);
-	free_tab(split);
-	data->nr_paths++;
-	data->true_input[k] = true;
+	*str = ft_strdup(tab[0]);
+	free_tab(tab);
+	data->paths_loaded++;
+	data->elements[q] = 1;
 }
 
-static void	process_distribution(char *line, int j, t_data *data)
+static void	parse_element(t_data *data, char *line, int j)
 {
 	if (line[j] == 'N' && line[j + 1] == 'O')
-		process_path(line, &data->nor, data, 0);
+		load_texture(line, &data->nor, data, 0);
 	else if (line[j] == 'S' && line[j + 1] == 'O')
-		process_path(line, &data->south, data, 1);
+		load_texture(line, &data->so, data, 1);
 	else if (line[j] == 'E' && line[j + 1] == 'A')
-		process_path(line, &data->east, data, 2);
+		load_texture(line, &data->east, data, 2);
 	else if (line[j] == 'W' && line[j + 1] == 'E')
-		process_path(line, &data->west, data, 3);
+		load_texture(line, &data->west, data, 3);
 	else if (line[j] == 'F')
-		process_color(line, data->floor, data, 4);
+		load_input_color(data, data->floor, line, 4);
 	else if (line[j] == 'C')
-		process_color(line, data->ceiling, data, 5);
+		load_input_color(data, data->ceil, line, 5);
 }
 
 char	*path_load(int fd, t_data *data)
@@ -93,14 +98,14 @@ char	*path_load(int fd, t_data *data)
 	while (i < data->start - 1)
 	{
 		j = 0;
-		while (line[j] == ' ' || line[j] == '\t')
+		while (line[j] == '\t' || line[j] == ' ')
 			j++;
 		if (line[j] != '\0')
-			process_distribution(line, j, data);
+			parse_element(data, line, j);
 		i++;
 		free(line);
 		get_next_line(fd, &line);
 	}
-	true_input_verify(data->true_input);
+	elements_check(data->elements);
 	return (line);
 }

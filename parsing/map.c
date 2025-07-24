@@ -2,30 +2,30 @@
 
 static void	memory_allocate(t_data *data)
 {
-	int	i;
+	int	j;
 
 	data->map = malloc(sizeof(char *) * data->rows);
 	if (!data->map)
 		print_error("failed malloc");
-	i = 0;
-	while (i < data->rows)
+	j = 0;
+	while (j < data->rows)
 	{
-		data->map[i] = malloc(sizeof(char) * (data->cols + 1));
-		if (!data->map[i])
+		data->map[j] = malloc(sizeof(char) * (data->cols + 1));
+		if (!data->map[j])
 			print_error("malloc fail");
-		data->map[i][data->cols] = '\0';
-		i++;
+		data->map[j][data->cols] = '\0';
+		j++;
 	}
 }
 
 static void	copy_row(int i, char *line, t_data *data)
 {
 	int	j;
-	int	size;
+	int	len;
 
 	j = 0;
-	size = ft_strlen(line);
-	while (j < size)
+	len = ft_strlen(line);
+	while (j < len)
 	{
 		data->map[i][j] = (line)[j];
 		j++;
@@ -37,27 +37,27 @@ static void	copy_row(int i, char *line, t_data *data)
 	}
 }
 
-void	check_store_map(int fd, char **line, t_data *data)
+void	validate_map(int fd, char **line, t_data *data)
 {
+	int	oct;
 	int	i;
-	int	bytes;
 
 	i = 0;
 	memory_allocate(data);
 	copy_row(i, *line, data);
 	i++;
 	free(*line);
-	bytes = get_next_line(fd, line);
-	while (bytes > 0 && i < data->rows)
+	oct = get_next_line(fd, line);
+	while (oct > 0 && i < data->rows)
 	{
-		if (i < data->rows && check_row_map(*line) == 1)
-			print_error("invalid map row");
+		if (i < data->rows && parse_row(*line) == 1)
+			print_error("error in row");
 		copy_row(i, *line, data);
 		i++;
 		free(*line);
-		bytes = get_next_line(fd, line);
+		oct = get_next_line(fd, line);
 	}
-	if (check_row_map(*line) == 1)
-		print_error("invalid map row");
+	if (parse_row(*line) == 1)
+		print_error("error in row");
 	copy_row(i, *line, data);
 }

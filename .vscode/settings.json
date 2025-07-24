@@ -1,8 +1,14 @@
 {
-    "files.associations": {
-        "render_struct.h": "c",
-        "initialize.h": "c",
-        "struct.h": "c",
-        "random": "c"
-    }
+  "files.associations": {
+    "render_struct.h": "c",
+    "initialize.h": "c",
+    "struct.h": "c",
+    "random": "c",
+    "*.c" : "c",
+    "*.h" : "c"
+  },
+  "[c]": {
+    "editor.defaultFormatter": "keyhr.42-c-format",
+    "editor.formatOnSave": true
+  }
 }

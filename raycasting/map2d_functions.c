@@ -1,128 +1,123 @@
 #include "../includes/struct.h"
 
-int init_minimap(t_info *gamedata, unsigned int max_pixels_minimap)
+int	begin_small_map(t_info *data, unsigned int max_size)
 {
-    unsigned int miniwidth;
-    unsigned int miniheight;
+	unsigned int	width;
+	unsigned int	height;
 
-    if (gamedata->map_width > gamedata->map_height)
-    {
-        gamedata->mini_pixelsize = max_pixels_minimap / gamedata->map_width;
-        miniwidth = gamedata->mini_pixelsize * gamedata->map_width;
-        miniheight = gamedata->mini_pixelsize * gamedata->map_height;
-    }
-    else
-    {
-        gamedata->mini_pixelsize = max_pixels_minimap / gamedata->map_height;
-        miniheight = gamedata->mini_pixelsize * gamedata->map_height;
-        miniwidth = gamedata->mini_pixelsize * gamedata->map_width;
-    }
-    
-    gamedata->imgmini = mlx_new_image(gamedata->mlx, miniwidth, miniheight);
-    if (gamedata->imgmini == NULL)
-        return (-1);
-    
-    gamedata->imgmini_data = mlx_get_data_addr(gamedata->imgmini,
-        &gamedata->mini_bpp, &gamedata->mini_line_len, &gamedata->mini_endian);
-    return (1);
+	if (data->range_x > data->range_y)
+	{
+		data->block_size = max_size / data->range_x;
+		width = data->block_size * data->range_x;
+		height = data->block_size * data->range_y;
+	}
+	else
+	{
+		data->block_size = max_size / data->range_y;
+		height = data->block_size * data->range_y;
+		width = data->block_size * data->range_x;
+	}
+	data->small_map = mlx_new_image(data->mlx, width, height);
+	if (data->small_map == NULL)
+		return (-1);
+	data->smallmap_data = mlx_get_data_addr(data->small_map, &data->small_cd,
+			&data->small_line_length, &data->small_order);
+	return (1);
 }
 
-void draw_player(char *img_data, t_camera player, unsigned int pixelsize,
-                 int size_line, int bpp)
+void	plot_camera(t_clear_info *data1, t_camera camera,
+		unsigned int bloc_size)
 {
-    int px = (int)(player.position.x * pixelsize);
-    int py = (int)(player.position.y * pixelsize);
-    unsigned int x, y;
+	int			px;
+	int			py;
+	t_motion	camerapos;
+	t_motion	headingline;
+	t_img_info	info;
 
-    // Draw small square for player (3x3 pixels)
-    for (y = 0; y < 3; ++y)
-    {
-        for (x = 0; x < 3; ++x)
-        {
-            int draw_x = px - 1 + x;
-            int draw_y = py - 1 + y;
-
-            if (draw_x >= 0 && draw_y >= 0) // Prevent negative coordinates
-                draw_pixel(img_data, size_line, bpp,
-                           (unsigned int)draw_x, (unsigned int)draw_y, WHITE);
-        }
-    }
-
-    // Draw heading line
-    t_motion playerpos;
-    t_motion headingline;
-
-    playerpos.x = px;
-    playerpos.y = py;
-    headingline = rotate_vector(player.vector, player.degree);
-    headingline.x *= 10;
-    headingline.y *= 10;
-
-    plot_line(vec_to_coor(playerpos),
-              vec_to_coor(add_vectors(playerpos, headingline)),
-              img_data, size_line, bpp, WHITE);
+	info.img_data = data1->img_data;
+	info.size_line = data1->size_line;
+	info.bpp = data1->bpp;
+	info.color = WHITE;
+	px = (int)(camera.position.x * bloc_size);
+	py = (int)(camera.position.y * bloc_size);
+	plot_camera_square(&info, px, py);
+	camerapos.x = px;
+	camerapos.y = py;
+	headingline = vrotate(camera.vector, camera.degree);
+	headingline.x *= 10;
+	headingline.y *= 10;
+	plot_camera_heading(data1, camerapos, headingline);
 }
 
-
-static void draw_wall(char *img_data, unsigned int x, unsigned int y,
-                      unsigned int pixelsize, int size_line, int bpp)
+static void	plot_wall(t_img_info *data, unsigned int x, unsigned int y,
+		unsigned int bloc_size)
 {
-    unsigned int wall_x;
-    unsigned int wall_y;
+	unsigned int	x_coo;
+	unsigned int	y_coo;
+	t_img_info		info;
 
-    wall_x = x;
-    while (wall_x < x + pixelsize - 1)
-    {
-        wall_y = y;
-        while (wall_y < y + pixelsize - 1)
-        {
-            draw_pixel(img_data, size_line, bpp, wall_x, wall_y, WHITE);
-            ++wall_y;
-        }
-        ++wall_x;
-    }
+	info.img_data = data->img_data;
+	info.size_line = data->size_line;
+	info.bpp = data->bpp;
+	x_coo = x;
+	while (x_coo < x + bloc_size - 1)
+	{
+		y_coo = y;
+		while (y_coo < y + bloc_size - 1)
+		{
+			plot_point(&info, x_coo, y_coo, WHITE);
+			++y_coo;
+		}
+		++x_coo;
+	}
 }
 
-static void draw_floor(char *img_data, unsigned int x, unsigned int y,
-                       unsigned int pixelsize, int size_line, int bpp)
+static void	plot_floor(t_img_info *data, unsigned int x, unsigned int y,
+		unsigned int bloc_size)
 {
-    unsigned int floor_x;
-    unsigned int floor_y;
+	unsigned int	x_coo;
+	unsigned int	y_coo;
+	t_img_info		info;
 
-    floor_x = x;
-    while (floor_x < x + pixelsize)
-    {
-        floor_y = y;
-        while (floor_y < y + pixelsize)
-        {
-            draw_pixel(img_data, size_line, bpp, floor_x, floor_y, GREY);
-            ++floor_y;
-        }
-        ++floor_x;
-    }
+	info.img_data = data->img_data;
+	info.size_line = data->size_line;
+	info.bpp = data->bpp;
+	x_coo = x;
+	while (x_coo < x + bloc_size)
+	{
+		y_coo = y;
+		while (y_coo < y + bloc_size)
+		{
+			plot_point(&info, x_coo, y_coo, GREY);
+			++y_coo;
+		}
+		++x_coo;
+	}
 }
 
-void draw_map(t_info *data)
+void	plot_map(t_info *data)
 {
-    unsigned int pixelsize;
-    unsigned int y;
-    unsigned int x;
+	unsigned int	bloc_size;
+	unsigned int	y;
+	unsigned int	x;
+	t_img_info		info;
 
-    pixelsize = data->mini_pixelsize;
-    y = 0;
-    while (y < data->map_height)
-    {
-        x = 0;
-        while (x < data->map_width)
-        {
-            if (data->map[y][x] == '1')
-                draw_wall(data->imgmini_data, x * pixelsize, y * pixelsize,
-                    pixelsize, data->mini_line_len, data->mini_bpp);
-            else
-                draw_floor(data->imgmini_data, x * pixelsize, y * pixelsize,
-                    pixelsize, data->mini_line_len, data->mini_bpp);
-            ++x;
-        }
-        ++y;
-    }
+	bloc_size = data->block_size;
+	info.img_data = data->smallmap_data;
+	info.size_line = data->small_line_length;
+	info.bpp = data->small_cd;
+	y = 0;
+	while (y < data->range_y)
+	{
+		x = 0;
+		while (x < data->range_x)
+		{
+			if (data->map[y][x] == '1')
+				plot_wall(&info, x * bloc_size, y * bloc_size, bloc_size);
+			else
+				plot_floor(&info, x * bloc_size, y * bloc_size, bloc_size);
+			++x;
+		}
+		++y;
+	}
 }

@@ -1,7 +1,7 @@
 #include "../includes/get_next_line.h"
 
 static int	copy_string(char **dest, const char *src, int n)
-{	
+{
 	int	i;
 
 	i = 0;

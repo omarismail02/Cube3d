@@ -1,96 +1,105 @@
 #include "../includes/struct.h"
 
-// Forward declaration
-static void process_movement_input(t_info *data, double angle);
-
-int key_press(int keycode, t_info *data)
+static void	resolve_movement(t_info *data, double angle)
 {
-	if (keycode == 65307) // ESC
+	t_dda		result;
+	t_motion	mov;
+
+	mov = vrotate(data->camera.vector, data->camera.degree + angle);
+	result = dda(data->camera.position, mov, data->camera.degree + angle,
+			data->map);
+	if (result.range > 0.1)
+	{
+		data->camera.position.x += mov.x * 0.01 * data->camera.speed;
+		data->camera.position.y += mov.y * 0.01 * data->camera.speed;
+	}
+}
+
+int	key_press(int keycode, t_info *data)
+{
+	if (keycode == 65307)
 	{
 		mlx_destroy_window(data->mlx, data->win);
 		exit(0);
 	}
-	if (keycode == 65363) // RIGHT arrow
-		data->player.degree = fmod(data->player.degree - data->rotation_angle + 360, 360);
-	if (keycode == 65361) // LEFT arrow
-		data->player.degree = fmod(data->player.degree + data->rotation_angle, 360);
-	if (keycode == 119) // W
-		process_movement_input(data, 0.0);
-	if (keycode == 100) // D
-		process_movement_input(data, 270.0);
-	if (keycode == 97) // A
-		process_movement_input(data, 90.0);
-	if (keycode == 115) // S
-		process_movement_input(data, 180.0);
+	if (keycode == 65363)
+		data->camera.degree = fmod(data->camera.degree - data->mov_angle + 360,
+				360);
+	if (keycode == 65361)
+		data->camera.degree = fmod(data->camera.degree + data->mov_angle, 360);
+	if (keycode == 119)
+		resolve_movement(data, 0.0);
+	if (keycode == 100)
+		resolve_movement(data, 270.0);
+	if (keycode == 97)
+		resolve_movement(data, 90.0);
+	if (keycode == 115)
+		resolve_movement(data, 180.0);
 	return (0);
 }
 
-// Movement logic
-static void process_movement_input(t_info *data, double angle)
+int	loop_hook(t_info *data)
 {
-	t_motion mov_vector;
-	t_dda result;
+	t_ray_input		input;
+	t_clear_info	clear;
 
-	mov_vector = rotate_vector(data->player.vector, data->player.degree + angle);
-	result = apply_dda(data->player.position, mov_vector, data->player.degree + angle, data->map);
-	if (result.range > 0.1)
-	{
-		data->player.position.x += mov_vector.x * 0.01 * data->player.speed;
-		data->player.position.y += mov_vector.y * 0.01 * data->player.speed;
-	}
-}
-
-// Loop redraw
-int loop_hook(t_info *data)
-{
-	clear_image(data->img_data, WIDTH, HEIGHT, data->line_len, data->bpp);
-	create_projection(data);
-	clear_image(data->imgmini_data, data->mini_pixelsize * data->map_width,
-		data->mini_pixelsize * data->map_height, data->mini_line_len, data->mini_bpp);
-	draw_map(data);
-	draw_viewing_cone(data);
-	draw_player(data->imgmini_data, data->player, data->mini_pixelsize,
-		data->mini_line_len, data->mini_bpp);
+	clear.img_data = data->img_data;
+	clear.width = WIDTH;
+	clear.height = HEIGHT;
+	clear.size_line = data->line_len;
+	clear.bpp = data->color_depth;
+	clear_image(&clear);
+	init_projection(data);
+	clear.img_data = data->smallmap_data;
+	clear.width = data->block_size * data->range_x;
+	clear.height = data->block_size * data->range_y;
+	clear.size_line = data->small_line_length;
+	clear.bpp = data->small_cd;
+	clear_image(&clear);
+	plot_map(data);
+	plot_fov(data, &input);
+	plot_camera(&clear, data->camera, data->block_size);
 	mlx_put_image_to_window(data->mlx, data->win, data->img, 0, 0);
-	mlx_put_image_to_window(data->mlx, data->win, data->imgmini,
-		WIDTH - data->mini_pixelsize * data->map_width,
-		HEIGHT - data->mini_pixelsize * data->map_height);
+	mlx_put_image_to_window(data->mlx, data->win, data->small_map, WIDTH
+		- data->block_size * data->range_x, HEIGHT - data->block_size
+		* data->range_y);
 	return (0);
 }
 
-// Main render function
-void render(t_data *data)
+void	helper_function(t_info *gamedata)
 {
-	t_info gamedata;
+	mlx_put_image_to_window(gamedata->mlx, gamedata->win, gamedata->small_map,
+		WIDTH - gamedata->block_size * gamedata->range_x, HEIGHT
+		- gamedata->block_size * gamedata->range_y);
+	mlx_hook(gamedata->win, 2, 1L << 0, key_press, gamedata);
+	mlx_hook(gamedata->win, 17, 0, close_window, NULL);
+	mlx_loop_hook(gamedata->mlx, loop_hook, gamedata);
+}
+
+void	render(t_data *data)
+{
+	t_info			gamedata;
+	t_ray_input		input;
+	t_clear_info	clear;
 
 	gamedata.mlx = mlx_init();
 	if (!gamedata.mlx)
 		print_error("Could not initialize mlx");
-
 	gamedata.win = mlx_new_window(gamedata.mlx, WIDTH, HEIGHT, "Cub3D");
-
 	if (!gamedata.win)
 		print_error("Could not create window");
-
-	if (init_gamestate(data, &gamedata, gamedata.mlx) == -1)
+	if (init_state(data, &gamedata, gamedata.mlx) == -1)
 		print_error("Failed to init game state");
-
-	if (init_minimap(&gamedata, MINIMAP) == -1)
+	if (begin_small_map(&gamedata, MINIMAP) == -1)
 		print_error("Failed to init minimap");
-
-	create_projection(&gamedata);
-	draw_map(&gamedata);
-	draw_viewing_cone(&gamedata);
-	draw_player(gamedata.imgmini_data, gamedata.player, gamedata.mini_pixelsize,
-		gamedata.mini_line_len, gamedata.mini_bpp);
-
+	init_projection(&gamedata);
+	plot_map(&gamedata);
+	plot_fov(&gamedata, &input);
+	clear.img_data = gamedata.img_data;
+	clear.size_line = gamedata.small_line_length;
+	clear.bpp = gamedata.small_cd;
+	plot_camera(&clear, gamedata.camera, gamedata.block_size);
 	mlx_put_image_to_window(gamedata.mlx, gamedata.win, gamedata.img, 0, 0);
-	mlx_put_image_to_window(gamedata.mlx, gamedata.win, gamedata.imgmini,
-		WIDTH - gamedata.mini_pixelsize * gamedata.map_width,
-		HEIGHT - gamedata.mini_pixelsize * gamedata.map_height);
-
-	mlx_hook(gamedata.win, 2, 1L << 0, key_press, &gamedata);
-	mlx_hook(gamedata.win, 17, 0, close_window, NULL);
-	mlx_loop_hook(gamedata.mlx, loop_hook, &gamedata);
+	helper_function(&gamedata);
 	mlx_loop(gamedata.mlx);
 }

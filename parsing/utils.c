@@ -21,13 +21,13 @@ void	free_tab(char **tab)
 	free(tab);
 }
 
-int	open_fd(char *file)
+int	file_open(char *file)
 {
 	int	fd;
 
 	fd = open(file, O_RDONLY);
 	if (fd == -1)
-		print_error("cannot open file");
+		print_error("file cannot be opened");
 	return (fd);
 }
 
@@ -49,6 +49,6 @@ void	free_map(t_data *data)
 
 void	element_inspector(char **map, int i, int j)
 {
-	if (map[i][j] == '0' || check_player(map[i][j], PLAYER) == 1)
+	if (map[i][j] == '0' || parse_camera(map[i][j], CAMERA) == 1)
 		print_error("invalid map");
 }

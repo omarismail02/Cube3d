@@ -1,6 +1,6 @@
 #include "../includes/struct.h"
 
-static void	init_dda(t_raygrid_data *data, t_motion *position, t_motion *ray)
+static void	initdda(t_raygrid_data *data, t_motion *position, t_motion *ray)
 {
 	if (ray->y < 0)
 	{
@@ -24,7 +24,8 @@ static void	init_dda(t_raygrid_data *data, t_motion *position, t_motion *ray)
 	}
 }
 
-static void	start_dda(t_raygrid_data *data, t_dda *result, double angle, char **map)
+static void	begin_dda(t_raygrid_data *data, t_dda *result, double angle,
+		char **map)
 {
 	int	hit;
 
@@ -53,21 +54,21 @@ static void	start_dda(t_raygrid_data *data, t_dda *result, double angle, char **
 	result->view_dist = cos((angle / 180) * M_PI) * result->range;
 }
 
-t_dda	apply_dda(t_motion pos_player, t_motion ray, double angle, char **map)
+t_dda	dda(t_motion pos_camera, t_motion ray, double angle, char **map)
 {
-	t_raygrid_data	dda_vars;
-	t_dda		result;
+	t_raygrid_data	vars;
+	t_dda			result;
 
-	dda_vars.y = (int) pos_player.y;
-	dda_vars.x = (int) pos_player.x;
-	dda_vars.dda_increment_x = absolute(1 / ray.x);
-	dda_vars.dda_increment_y = absolute(1 / ray.y);
-	init_dda(&dda_vars, &pos_player, &ray);
-	start_dda(&dda_vars, &result, angle, map);
+	vars.y = (int)pos_camera.y;
+	vars.x = (int)pos_camera.x;
+	vars.dda_increment_x = absolute(1 / ray.x);
+	vars.dda_increment_y = absolute(1 / ray.y);
+	initdda(&vars, &pos_camera, &ray);
+	begin_dda(&vars, &result, angle, map);
 	if (result.dir == EAST || result.dir == WEST)
-		result.position = pos_player.y + result.range * ray.y;
+		result.position = pos_camera.y + result.range * ray.y;
 	else
-		result.position = pos_player.x + result.range * ray.x;
+		result.position = pos_camera.x + result.range * ray.x;
 	result.position -= floorf(result.position);
 	return (result);
 }
