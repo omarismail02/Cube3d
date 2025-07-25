@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   render.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: oismail <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/25 12:04:55 by oismail           #+#    #+#             */
+/*   Updated: 2025/07/25 12:04:57 by oismail          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/struct.h"
 
 static void	resolve_movement(t_info *data, double angle)
@@ -38,11 +50,36 @@ int	key_press(int keycode, t_info *data)
 	return (0);
 }
 
+static void init(t_img_info *info, t_clear_info *data, t_ray_input *input, t_image_data *image)
+{
+	info->img_data = NULL;
+	info->size_line = 0;
+	info->bpp = 0;
+	info->color = 0;
+	data->bpp = 0;
+	data->height = 0;
+	data->img_data = NULL;
+	data->size_line = 0;
+	data->width = 0;
+	input->ray.x = 0.0;
+	input->ray.y = 0.0;
+	input->camerapos.x = 0.0;
+	input->camerapos.y = 0.0;
+	input->block_size = 0;
+	image->bpp = 0;
+	image->buffer = NULL;
+	image->colour = 0;
+	image->line_length = 0;
+}
+
 int	loop_hook(t_info *data)
 {
 	t_ray_input		input;
 	t_clear_info	clear;
+	t_img_info		info;
+	t_image_data	image;
 
+	init(&info, &clear, &input, &image);
 	clear.img_data = data->img_data;
 	clear.width = WIDTH;
 	clear.height = HEIGHT;
@@ -81,7 +118,7 @@ void	render(t_data *data)
 	t_info			gamedata;
 	t_ray_input		input;
 	t_clear_info	clear;
-
+	
 	gamedata.mlx = mlx_init();
 	if (!gamedata.mlx)
 		print_error("Could not initialize mlx");

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: oismail <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/25 12:05:23 by oismail           #+#    #+#             */
+/*   Updated: 2025/07/25 12:05:25 by oismail          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/struct.h"
 
 double	absolute(double number)
@@ -40,8 +52,11 @@ void	plot_camera_square(t_img_info *info, int px, int py)
 void	plot_camera_heading(t_clear_info *data1, t_motion camerapos,
 		t_motion headingline)
 {
-	t_image_data	data;
+	t_image_data	data ;
 
+	data.bpp = 0;
+	data.buffer = NULL;
+	data.line_length = 0;
 	data.colour = WHITE;
 	plot_line(vec2pos(camerapos), vec2pos(vadd(camerapos, headingline)),
 		data1->img_data, &data);

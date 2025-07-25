@@ -1,43 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_putnbr_fd.c                                     :+:      :+:    :+:   */
+/*   ft_strcmp.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: oismail <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/16 15:06:06 by oismail           #+#    #+#             */
-/*   Updated: 2024/07/16 15:06:09 by oismail          ###   ########.fr       */
+/*   Created: 2024/07/16 15:07:21 by oismail           #+#    #+#             */
+/*   Updated: 2024/07/16 15:07:25 by oismail          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
-#include <unistd.h>
 
-void	ft_putnbr_fd(int n, int fd)
+int	ft_strcmp(char *s1, char *s2)
 {
-	long	nb;
+	size_t	i;
 
-	nb = n;
-	if (nb < 0)
+	i = 0;
+	if (!s1)
+		return (1);
+	while (s1[i] || s2[i])
 	{
-		write(fd, "-", 1);
-		nb *= -1;
+		if (s1[i] != s2[i])
+			return (s1[i] - s2[i]);
+		i++;
 	}
-	if (nb > 9)
-	{
-		ft_putnbr_fd(nb / 10, fd);
-		ft_putchar_fd((nb % 10) + '0', fd);
-	}
-	else
-		ft_putchar_fd(nb + '0', fd);
+	return (0);
 }
-
-// int main()
-// {
-// 	int fd = 1; // Assuming 1 for standard output (stdout)
-// 	int num = -12345;
-
-// 	ft_putnbr_fd(num, fd);
-
-// 	return 0;
-// }
