@@ -35,10 +35,11 @@ int	key_press(int keycode, t_info *data)
 		exit(0);
 	}
 	if (keycode == 65363)
-		data->camera.degree = fmod(data->camera.degree - data->mov_angle + 360,
-				360);
+		data->camera.degree = normalize_angle(data->camera.degree
+				- data->mov_angle);
 	if (keycode == 65361)
-		data->camera.degree = fmod(data->camera.degree + data->mov_angle, 360);
+		data->camera.degree = normalize_angle(data->camera.degree
+				+ data->mov_angle);
 	if (keycode == 119)
 		resolve_movement(data, 0.0);
 	if (keycode == 100)
@@ -50,28 +51,6 @@ int	key_press(int keycode, t_info *data)
 	return (0);
 }
 
-static void init(t_img_info *info, t_clear_info *data, t_ray_input *input, t_image_data *image)
-{
-	info->img_data = NULL;
-	info->size_line = 0;
-	info->bpp = 0;
-	info->color = 0;
-	data->bpp = 0;
-	data->height = 0;
-	data->img_data = NULL;
-	data->size_line = 0;
-	data->width = 0;
-	input->ray.x = 0.0;
-	input->ray.y = 0.0;
-	input->camerapos.x = 0.0;
-	input->camerapos.y = 0.0;
-	input->block_size = 0;
-	image->bpp = 0;
-	image->buffer = NULL;
-	image->colour = 0;
-	image->line_length = 0;
-}
-
 int	loop_hook(t_info *data)
 {
 	t_ray_input		input;
@@ -80,12 +59,8 @@ int	loop_hook(t_info *data)
 	t_image_data	image;
 
 	init(&info, &clear, &input, &image);
-	clear.img_data = data->img_data;
-	clear.width = WIDTH;
-	clear.height = HEIGHT;
-	clear.size_line = data->line_len;
-	clear.bpp = data->color_depth;
 	clear_image(&clear);
+	clear_fu(&clear, data);
 	init_projection(data);
 	clear.img_data = data->smallmap_data;
 	clear.width = data->block_size * data->range_x;
@@ -118,7 +93,7 @@ void	render(t_data *data)
 	t_info			gamedata;
 	t_ray_input		input;
 	t_clear_info	clear;
-	
+
 	gamedata.mlx = mlx_init();
 	if (!gamedata.mlx)
 		print_error("Could not initialize mlx");

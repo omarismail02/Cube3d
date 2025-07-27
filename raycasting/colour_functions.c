@@ -53,3 +53,20 @@ unsigned int	create_colour(unsigned char r, unsigned char g, unsigned char b,
 {
 	return ((a << 24) | (r << 16) | (g << 8) | b);
 }
+
+double	normalize_angle(double angle)
+{
+	angle = angle - ((int)(angle / 360) *360);
+	if (angle < 0)
+		angle += 360;
+	return (angle);
+}
+
+void	clear_fu(t_clear_info *info, t_info *data)
+{
+	info->img_data = data->img_data;
+	info->width = WIDTH;
+	info->height = HEIGHT;
+	info->size_line = data->line_len;
+	info->bpp = data->color_depth;
+}

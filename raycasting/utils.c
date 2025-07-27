@@ -52,7 +52,7 @@ void	plot_camera_square(t_img_info *info, int px, int py)
 void	plot_camera_heading(t_clear_info *data1, t_motion camerapos,
 		t_motion headingline)
 {
-	t_image_data	data ;
+	t_image_data	data;
 
 	data.bpp = 0;
 	data.buffer = NULL;
@@ -60,4 +60,27 @@ void	plot_camera_heading(t_clear_info *data1, t_motion camerapos,
 	data.colour = WHITE;
 	plot_line(vec2pos(camerapos), vec2pos(vadd(camerapos, headingline)),
 		data1->img_data, &data);
+}
+
+void	init(t_img_info *info, t_clear_info *data, t_ray_input *input,
+		t_image_data *image)
+{
+	info->img_data = NULL;
+	info->size_line = 0;
+	info->bpp = 0;
+	info->color = 0;
+	data->bpp = 0;
+	data->height = 0;
+	data->img_data = NULL;
+	data->size_line = 0;
+	data->width = 0;
+	input->ray.x = 0.0;
+	input->ray.y = 0.0;
+	input->camerapos.x = 0.0;
+	input->camerapos.y = 0.0;
+	input->block_size = 0;
+	image->bpp = 0;
+	image->buffer = NULL;
+	image->colour = 0;
+	image->line_length = 0;
 }
