@@ -12,6 +12,30 @@
 
 #include "../includes/parse.h"
 
+void	cleanup_textures(t_data *data)
+{
+	if (data->nor)
+	{
+		free(data->nor);
+		data->nor = NULL;
+	}
+	if (data->so)
+	{
+		free(data->so);
+		data->so = NULL;
+	}
+	if (data->east)
+	{
+		free(data->east);
+		data->east = NULL;
+	}
+	if (data->west)
+	{
+		free(data->west);
+		data->west = NULL;
+	}
+}
+
 static void	initialization(t_data *data, int i)
 {
 	data->paths_loaded = 0;
@@ -75,5 +99,6 @@ int	main(int argc, char **argv)
 	read_input(&data, argv[1]);
 	render(&data);
 	free_map(&data);
+	cleanup_textures(&data);
 	return (0);
 }

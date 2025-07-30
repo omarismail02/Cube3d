@@ -53,6 +53,7 @@ char				*path_load(int fd, t_data *data);
 void				last_comma(char *str);
 void				print_error(char *str);
 void				free_tab(char **str);
+
 int					file_open(char *file);
 void				elements_check(int tab[]);
 void				validate_map(int fd, char **line, t_data *data);

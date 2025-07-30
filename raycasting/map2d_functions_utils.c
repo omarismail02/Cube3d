@@ -63,6 +63,6 @@ void	plot_ray(char *img_data, t_ray_input input, int size_line, int bpp)
 	init_ray_line_data(&start, &end, input);
 	data.line_length = size_line;
 	data.bpp = bpp;
-	data.colour = RED;
+	data.colour = OLIVE;
 	plot_line(start, end, img_data, &data);
 }

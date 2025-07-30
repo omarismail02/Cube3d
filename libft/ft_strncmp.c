@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include<unistd.h>
+#include <unistd.h>
 //#include<stdio.h>
 
 // int	ft_strncmp(char *s1, char *s2, size_t n)
@@ -51,7 +51,7 @@ int	ft_strncmp(const char *s1, const char *s2, size_t n)
 	return (0);
 }
 
-//int main(void)
+// int main(void)
 //{
 //	printf("%d", ft_strncmp("aCCD", "cAAd", 2));
 //	return (0);

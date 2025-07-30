@@ -201,11 +201,15 @@ void						plot_line(t_coordinates po, t_coordinates po1,
 void						plot_line_horizontal(t_coordinates po,
 								t_coordinates po1, char *image,
 								t_image_data *data);
+void						init(t_img_info *info, t_clear_info *data,
+								t_ray_input *input, t_image_data *image);
 void						plot_line_vertical(t_coordinates po,
 								t_coordinates po1, char *image,
 								t_image_data *data);
 long						abs_int(int number);
 double						absolute(double number);
+double						normalize_angle(double angle);
+void						clear_fu(t_clear_info *info, t_info *data);
 t_dda						dda(t_motion pos_camera, t_motion ray, double angle,
 								char **map);
 void						plot_point(t_img_info *info, unsigned int x,
